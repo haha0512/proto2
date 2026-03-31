@@ -11,7 +11,7 @@ levels.defs = {
         },
     },
     {
-        id = 2, name = "Haunted Harvest", waves = 7, enemyMult = 1.60,
+        id = 2, name = "Haunted Harvest", waves = 7, enemyMult = 1.15,
         desc = "The dead are restless. Something worse than weeds stirs in the fields.",
         availableFacilities = { "farmstead", "arcane_tower" },
         waveComps = {
@@ -25,7 +25,7 @@ levels.defs = {
         },
     },
     {
-        id = 3, name = "First Contact", waves = 10, enemyMult = 2.40,
+        id = 3, name = "First Contact", waves = 10, enemyMult = 1.35,
         desc = "They come from beyond the stars. Adapt or fall.",
         availableFacilities = { "farmstead", "arcane_tower", "barracks" },
         waveComps = {
@@ -42,7 +42,7 @@ levels.defs = {
         },
     },
     {
-        id = 4, name = "Onslaught", waves = 14, enemyMult = 3.50,
+        id = 4, name = "Onslaught", waves = 14, enemyMult = 1.65,
         desc = "Overwhelming numbers. Hold the line.",
         availableFacilities = { "farmstead", "arcane_tower", "barracks" },
         waveComps = {
@@ -50,7 +50,7 @@ levels.defs = {
         },
     },
     {
-        id = 5, name = "Apocalypse", waves = 20, enemyMult = 4.80,
+        id = 5, name = "Apocalypse", waves = 20, enemyMult = 2.10,
         desc = "The final assault. Survive or fall forever.",
         availableFacilities = { "farmstead", "arcane_tower", "barracks" },
         waveComps = {

@@ -36,8 +36,8 @@ local function startNextWave()
     local unit  = require("src.unit")
 
     -- Stat scaling multipliers (applied to each class's own base stats)
-    local hpMult  = wave.enemyMult * (1 + n * 0.22)
-    local dmgMult = wave.enemyMult * (1 + n * 0.15)
+    local hpMult  = wave.enemyMult * (1 + n * 0.09)
+    local dmgMult = wave.enemyMult * (1 + n * 0.06)
 
     -- Use the composition for this wave; fall back to the last defined entry.
     local comp = wave.waveComps[n] or wave.waveComps[#wave.waveComps] or { plant = 1.0 }
@@ -67,8 +67,8 @@ function wave.update(dt)
             local batch    = math.min(5, 2 + math.floor(n / 3))
             wave.streamTimer = interval
 
-            local hpMult  = wave.enemyMult * (1 + n * 0.22)
-            local dmgMult = wave.enemyMult * (1 + n * 0.15)
+            local hpMult  = wave.enemyMult * (1 + n * 0.09)
+            local dmgMult = wave.enemyMult * (1 + n * 0.06)
             local comp    = wave.waveComps[n] or wave.waveComps[#wave.waveComps] or { plant = 1.0 }
             for _ = 1, batch do
                 local spawnX = math.random(16, C.SCREEN_W - 16)
