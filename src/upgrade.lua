@@ -32,21 +32,21 @@ local pool = {
         end,
     },
     {
-        id    = "barracks_rate",
-        label = "Cheaper Allies",
-        desc  = "Allies cost 25% less to spawn",
+        id    = "spawn_rate",
+        label = "+Spawn Speed",
+        desc  = "All facilities spawn allies 20% faster",
         cost  = 0,
         apply = function()
-            player.spawnCostMult = player.spawnCostMult * 0.75
+            player.spawnRateMult = player.spawnRateMult * 0.80
         end,
     },
     {
-        id    = "barracks_cap",
+        id    = "facility_cap",
         label = "+Unit Cap",
-        desc  = "Each Barracks allows 1 more ally",
+        desc  = "Each facility holds 1 more ally",
         cost  = 70,
         apply = function()
-            player.barracksCapBonus = player.barracksCapBonus + 1
+            player.facilityCapBonus = player.facilityCapBonus + 1
         end,
     },
     {

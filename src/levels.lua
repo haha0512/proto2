@@ -3,7 +3,7 @@ local levels = {}
 
 levels.defs = {
     {
-        id = 1, name = "Infestation", waves = 4, enemyMult = 1.00,
+        id = 1, name = "Infestation", waves = 7, enemyMult = 1.00,
         desc = "Your crops have turned. A small raiding force tests your defenses.",
         availableFacilities = { "farmstead" },
         waveComps = {

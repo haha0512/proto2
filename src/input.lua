@@ -86,21 +86,11 @@ function input.handleMouse(x, y, button)
                     return
                 end
             end
-            -- Click on placed facility to spawn ally (only when not in build mode)
-            if not ui.buildMode.active then
-                local f = facility.facilityAt(x, y)
-                if f then
-                    facility.trySpawnAlly(f)
-                    return
-                end
-            end
-
-            -- Grid placement
+            -- Build mode: place a new facility on a free grid cell.
             if ui.buildMode.active then
                 local ftype = ui.buildMode.facilityType
                 local def   = facility.defs[ftype]
                 local cell  = map.snapToGrid(x, y)
-
                 if cell and map.isCellFree(cell.gx, cell.gy)
                         and #facility.list < C.MAX_FACILITIES
                         and player.canAfford(def.cost) then
@@ -109,6 +99,15 @@ function input.handleMouse(x, y, button)
                     map.occupyCell(cell.gx, cell.gy)
                     ui.buildMode.active = false
                     ui.buildMode.facilityType = nil
+                end
+            end
+
+            -- Not in build mode: clicking a tier-1 facility starts a drag for merging.
+            if not ui.buildMode.active and not ui.drag.active then
+                local f = facility.facilityAt(x, y)
+                if f and f.tier == 1 then
+                    ui.drag.active   = true
+                    ui.drag.facility = f
                 end
             end
         end
@@ -141,6 +140,38 @@ function input.handleMouse(x, y, button)
             GS.set("levelselect")
         end
     end
+end
+
+-- Called on mouse button release; resolves any active facility drag.
+function input.handleMouseReleased(x, y, button)
+    x = x - C.SIDE_W
+    if button ~= 1 then return end
+    if GS.current ~= "playing" then
+        ui.drag.active   = false
+        ui.drag.facility = nil
+        return
+    end
+
+    if ui.drag.active and ui.drag.facility then
+        local df     = ui.drag.facility
+        local target = facility.facilityAt(x, y)
+        -- Valid drop: a different T1 facility of the same type
+        if target and target ~= df
+                and target.facilityType == df.facilityType
+                and target.tier == 1 then
+            local def = facility.defs[df.facilityType]
+            if def and player.canAfford(def.upgradeCost) then
+                player.spend(def.upgradeCost)
+                facility.upgrade(target)
+                facility.remove(df)
+                map.freeCell(df.gridX, df.gridY)
+            end
+        end
+        -- Invalid drop → facility stays; no cost.
+    end
+
+    ui.drag.active   = false
+    ui.drag.facility = nil
 end
 
 function input.handleKey(key)

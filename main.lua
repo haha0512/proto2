@@ -11,6 +11,7 @@ local combat      = require("src.combat")
 local upgrade     = require("src.upgrade")
 local ui          = require("src.ui")
 local input       = require("src.input")
+local fx          = require("src.fx")
 local meta        = require("src.meta")
 local levels      = require("src.levels")
 local levelselect = require("src.levelselect")
@@ -30,6 +31,7 @@ function main.startGame(levelId)
     wave.waveComps = lvlDef.waveComps or { { plant = 1.0 } }
     unit.clearAll()
     facility.clearAll()
+    fx.clear()
     map.resetGate()
     map.resetGrid()
     ui.setAvailableFacilities(lvlDef.availableFacilities or { "farmstead" })
@@ -91,6 +93,7 @@ function love.update(dt)
         facility.update(dt)
         unit.updateAll(dt, map.gate)
         combat.pruneDeadUnits(unit.allies, unit.enemies)
+        fx.update(dt)
 
         -- Check gate destroyed (loss)
         if map.gate.hp <= 0 then
@@ -140,6 +143,7 @@ function love.draw()
         map.drawGate()
         facility.draw()
         unit.draw()
+        fx.draw()
         ui.drawBuildCursor()
         ui.drawToolbar()
         ui.drawHUD()
@@ -169,6 +173,10 @@ end
 
 function love.mousepressed(x, y, button)
     input.handleMouse(x, y, button)
+end
+
+function love.mousereleased(x, y, button)
+    input.handleMouseReleased(x, y, button)
 end
 
 function love.keypressed(key)

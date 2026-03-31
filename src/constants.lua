@@ -39,6 +39,7 @@ C.COL = {
     gate_hp_bg    = {0.22, 0.12, 0.02},
     gate_hp_fg    = {0.92, 0.76, 0.10},
     barracks      = {0.22, 0.68, 0.28},
+    barracks2     = {0.13, 0.41, 0.17},
     generator     = {0.82, 0.56, 0.10},
     ally          = {0.22, 0.55, 1.00},
     enemy         = {1.00, 0.20, 0.20},
@@ -50,9 +51,15 @@ C.COL = {
     enemy_plant   = {0.15, 0.75, 0.10},   -- vivid green
     enemy_ghost   = {0.85, 0.85, 1.00},   -- pale blue-white
     enemy_alien   = {0.90, 0.45, 0.05},   -- bright orange
+    -- Tier-2 ally colors (darker ~60%)
+    ally_farmer2  = {0.43, 0.31, 0.15},
+    ally_mage2    = {0.37, 0.15, 0.51},
+    ally_soldier2 = {0.13, 0.33, 0.60},
     -- Facility colors
     farmstead     = {0.60, 0.40, 0.15},
+    farmstead2    = {0.36, 0.24, 0.09},
     arcane_tower  = {0.50, 0.20, 0.70},
+    arcane_tower2 = {0.30, 0.12, 0.42},
     hp_bg         = {0.15, 0.05, 0.05},
     hp_ally       = {0.15, 0.85, 0.15},
     hp_enemy      = {0.90, 0.15, 0.15},

@@ -9,6 +9,9 @@ local ui = {}
 -- Build mode state (read by input.lua, drawn here)
 ui.buildMode = { active = false, facilityType = nil }
 
+-- Drag state: dragging a placed T1 facility to merge with another T1 of the same type.
+ui.drag = { active = false, facility = nil }
+
 -- Available facility types for the current level (set by setAvailableFacilities).
 ui.availableFacilities = { "farmstead" }
 
@@ -167,23 +170,39 @@ function ui.drawToolbar()
         end
 
         -- Icon
-        local iconX = btn.x + 20
-        local iconY = btn.y + btn.h / 2
+        local iconX   = btn.x + 20
+        local iconY   = btn.y + btn.h / 2
         assets.draw(def.asset, iconX, iconY)
 
-        -- Labels
+        -- Labels — clip text to available width to prevent overflow
+        local textX   = btn.x + 38
+        local textW   = btn.w - 42
         local textCol = (canAfford and not tooMany) and C.COL.ui_text or C.COL.card_text_dim
+
         love.graphics.setColor(textCol)
         love.graphics.setFont(fm)
-        love.graphics.print(def.label, btn.x + 38, btn.y + 6)
-        love.graphics.setFont(ft)
-        love.graphics.setColor(C.COL.money[1], C.COL.money[2], C.COL.money[3],
-            (canAfford and not tooMany) and 1 or 0.45)
-        love.graphics.print(def.costLabel, btn.x + 38, btn.y + 24)
+        love.graphics.printf(def.label, textX, btn.y + 5, textW, "left")
 
+        love.graphics.setFont(ft)
         if tooMany then
             love.graphics.setColor(C.COL.card_text_dim)
-            love.graphics.print("(base full)", btn.x + 38, btn.y + 38)
+            love.graphics.printf("(base full)", textX, btn.y + 22, textW, "left")
+        else
+            love.graphics.setColor(C.COL.money[1], C.COL.money[2], C.COL.money[3],
+                canAfford and 1 or 0.45)
+            love.graphics.printf("$" .. def.cost .. " to place", textX, btn.y + 22, textW, "left")
+        end
+
+        -- Upgrade hint: show T2 cost if a tier-1 of this type exists
+        local hasT1 = false
+        for _, f in ipairs(facility.list) do
+            if f.facilityType == ftype and f.tier == 1 then hasT1 = true; break end
+        end
+        if hasT1 then
+            local canUpg = player.canAfford(def.upgradeCost)
+            love.graphics.setColor(C.COL.shard[1], C.COL.shard[2], C.COL.shard[3],
+                canUpg and 0.90 or 0.40)
+            love.graphics.printf("T2: $" .. def.upgradeCost, textX, btn.y + 36, textW, "left")
         end
     end
 

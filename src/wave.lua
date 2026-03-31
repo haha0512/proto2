@@ -35,9 +35,11 @@ local function startNextWave()
     local n     = wave.number
     local unit  = require("src.unit")
 
-    -- Stat scaling multipliers (applied to each class's own base stats)
-    local hpMult  = wave.enemyMult * (1 + n * 0.09)
-    local dmgMult = wave.enemyMult * (1 + n * 0.06)
+    -- Stat scaling multipliers (applied to each class's own base stats).
+    -- timeMult adds ~+1% HP per 3 seconds elapsed (≈+20% per minute).
+    local timeMult = 1 + wave.elapsed * 0.0033
+    local hpMult   = wave.enemyMult * (1 + n * 0.09) * timeMult
+    local dmgMult  = wave.enemyMult * (1 + n * 0.06)
 
     -- Use the composition for this wave; fall back to the last defined entry.
     local comp = wave.waveComps[n] or wave.waveComps[#wave.waveComps] or { plant = 1.0 }
@@ -55,6 +57,7 @@ end
 
 function wave.update(dt)
     local unit = require("src.unit")
+    wave.elapsed = wave.elapsed + dt
 
     -- ── Continuous stream: trickle of enemies throughout every wave ───────────
     -- Runs from wave 1 onward; stops once the last wave has started so the
@@ -67,8 +70,9 @@ function wave.update(dt)
             local batch    = math.min(5, 2 + math.floor(n / 3))
             wave.streamTimer = interval
 
-            local hpMult  = wave.enemyMult * (1 + n * 0.09)
-            local dmgMult = wave.enemyMult * (1 + n * 0.06)
+            local timeMult = 1 + wave.elapsed * 0.0033
+            local hpMult   = wave.enemyMult * (1 + n * 0.09) * timeMult
+            local dmgMult  = wave.enemyMult * (1 + n * 0.06)
             local comp    = wave.waveComps[n] or wave.waveComps[#wave.waveComps] or { plant = 1.0 }
             for _ = 1, batch do
                 local spawnX = math.random(16, C.SCREEN_W - 16)
@@ -118,6 +122,7 @@ function wave.reset()
     wave.levelComplete = false
     wave.waveComps     = { { plant = 1.0 } }
     wave.streamTimer   = 7.0
+    wave.elapsed       = 0
 end
 
 wave.reset()

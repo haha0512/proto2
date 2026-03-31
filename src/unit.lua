@@ -4,6 +4,7 @@
 local C      = require("src.constants")
 local combat = require("src.combat")
 local player = require("src.player")
+local fx     = require("src.fx")
 
 local unit  = {}
 
@@ -13,14 +14,18 @@ unit.enemies = {}
 local _nextId = 1
 
 local UnitDefs = {
-    -- Ally classes
-    farmer  = { speed = 70, hp = 100, damage = 18, atkRange = 40, atkCooldown = 0.65, radius = 9,  reward = 0,  expValue = 0, asset = "ally_farmer"  },
-    mage    = { speed = 60, hp = 80,  damage = 26, atkRange = 80, atkCooldown = 0.85, radius = 8,  reward = 0,  expValue = 0, asset = "ally_mage"    },
-    soldier = { speed = 80, hp = 120, damage = 20, atkRange = 42, atkCooldown = 0.60, radius = 10, reward = 0,  expValue = 0, asset = "ally_soldier" },
+    -- Ally classes (tier 1)
+    farmer  = { speed = 70, hp = 100, damage = 18, atkRange = 40,  atkCooldown = 0.65, radius = 9,  reward = 0,  expValue = 0, asset = "ally_farmer",   aoeRadius = nil, attackType = "melee",      fxColor = {0.95, 0.85, 0.20} },
+    mage    = { speed = 60, hp = 80,  damage = 26, atkRange = 80,  atkCooldown = 0.85, radius = 8,  reward = 0,  expValue = 0, asset = "ally_mage",     aoeRadius = nil, attackType = "projectile", fxColor = {0.80, 0.35, 1.00} },
+    soldier = { speed = 80, hp = 120, damage = 20, atkRange = 42,  atkCooldown = 0.60, radius = 10, reward = 0,  expValue = 0, asset = "ally_soldier",  aoeRadius = nil, attackType = "melee",      fxColor = {0.30, 0.65, 1.00} },
+    -- Ally classes (tier 2 — larger, darker, special abilities)
+    farmer2  = { speed = 65, hp = 150, damage = 32, atkRange = 50,  atkCooldown = 0.65, radius = 13, reward = 0,  expValue = 0, asset = "ally_farmer2",  aoeRadius = 35,  attackType = "aoe",        fxColor = {1.00, 0.65, 0.10} },
+    mage2    = { speed = 55, hp = 120, damage = 44, atkRange = 90,  atkCooldown = 0.85, radius = 12, reward = 0,  expValue = 0, asset = "ally_mage2",    aoeRadius = 55,  attackType = "aoe",        fxColor = {0.95, 0.50, 1.00} },
+    soldier2 = { speed = 75, hp = 180, damage = 38, atkRange = 110, atkCooldown = 0.55, radius = 14, reward = 0,  expValue = 0, asset = "ally_soldier2", aoeRadius = nil, attackType = "projectile", fxColor = {0.60, 0.95, 1.00} },
     -- Enemy classes
-    plant   = { speed = 38, hp = 180, damage = 20, atkRange = 38, atkCooldown = 0.75, radius = 13, reward = 12, expValue = 1, asset = "enemy_plant"  },
-    ghost   = { speed = 75, hp = 115, damage = 22, atkRange = 44, atkCooldown = 0.70, radius = 11, reward = 12, expValue = 1, asset = "enemy_ghost"  },
-    alien   = { speed = 65, hp = 145, damage = 26, atkRange = 55, atkCooldown = 0.70, radius = 10, reward = 12, expValue = 1, asset = "enemy_alien"  },
+    plant   = { speed = 38, hp = 180, damage = 20, atkRange = 38,  atkCooldown = 0.75, radius = 13, reward = 12, expValue = 1, asset = "enemy_plant",   aoeRadius = nil, attackType = "melee",      fxColor = {0.35, 1.00, 0.20} },
+    ghost   = { speed = 75, hp = 115, damage = 22, atkRange = 44,  atkCooldown = 0.70, radius = 11, reward = 12, expValue = 1, asset = "enemy_ghost",   aoeRadius = nil, attackType = "melee",      fxColor = {0.90, 0.90, 1.00} },
+    alien   = { speed = 65, hp = 145, damage = 26, atkRange = 55,  atkCooldown = 0.70, radius = 10, reward = 12, expValue = 1, asset = "enemy_alien",   aoeRadius = nil, attackType = "projectile", fxColor = {1.00, 0.55, 0.05} },
 }
 
 -- unitClass must be one of: "farmer", "mage", "soldier"
@@ -40,6 +45,9 @@ function unit.newAlly(x, y, sourceBarracks, unitClass)
         atkCooldown    = def.atkCooldown,
         atkTimer       = 0,
         radius         = def.radius,
+        aoeRadius      = def.aoeRadius,
+        attackType     = def.attackType,
+        fxColor        = def.fxColor,
         target         = nil,
         dead           = false,
         reward         = def.reward,
@@ -75,6 +83,8 @@ function unit.newEnemy(x, y, unitClass, hpMult, dmgMult, isStream)
         atkCooldown    = def.atkCooldown,
         atkTimer       = 0,
         radius         = def.radius,
+        attackType     = def.attackType,
+        fxColor        = def.fxColor,
         target         = nil,
         dead           = false,
         reward         = def.reward,
@@ -181,7 +191,30 @@ local function updateAlly(u, dt, frontlineY)
             u.atkTimer = u.atkTimer - dt
             if u.atkTimer <= 0 then
                 u.atkTimer = u.atkCooldown
+                -- Attack visual effect (once per swing).
+                local at = u.attackType
+                if at == "aoe" then
+                    fx.addAoe(u.target.x, u.target.y, u.aoeRadius, u.fxColor)
+                elseif at == "projectile" then
+                    fx.addProjectile(u.x, u.y, u.target.x, u.target.y, u.fxColor)
+                else
+                    fx.addMelee(u.target.x, u.target.y, u.fxColor)
+                end
                 combat.applyDamage(u, u.target)
+                -- Tier-2 AOE: splash damage to all enemies near the target.
+                if u.aoeRadius then
+                    local tx, ty = u.target.x, u.target.y
+                    local r2     = u.aoeRadius * u.aoeRadius
+                    for _, e in ipairs(unit.enemies) do
+                        if not e.dead and e ~= u.target then
+                            local dx = e.x - tx
+                            local dy = e.y - ty
+                            if dx * dx + dy * dy <= r2 then
+                                combat.applyDamage(u, e)
+                            end
+                        end
+                    end
+                end
             end
         else
             -- Move in full 2D toward the target.  The frontline hard-clamp in
@@ -222,6 +255,12 @@ local function updateEnemy(u, dt, gate, frontlineY)
             u.atkTimer = u.atkTimer - dt
             if u.atkTimer <= 0 then
                 u.atkTimer = u.atkCooldown
+                -- Attack visual effect.
+                if u.attackType == "projectile" then
+                    fx.addProjectile(u.x, u.y, u.target.x, u.target.y, u.fxColor)
+                else
+                    fx.addMelee(u.target.x, u.target.y, u.fxColor)
+                end
                 combat.applyDamage(u, u.target)
             end
         else

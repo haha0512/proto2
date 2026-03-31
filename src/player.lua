@@ -17,8 +17,8 @@ function player.reset()
     player.allySpeedMult        = 1.0
     player.moneyPerKill         = 0      -- flat gold bonus per kill
     player.passiveIncomePerSec  = 5      -- base gold/sec
-    player.spawnCostMult        = 1.0    -- multiplied when computing ally spawn cost
-    player.barracksCapBonus     = 0      -- +N to each barracks unit cap
+    player.spawnRateMult        = 1.0    -- multiplied on spawn interval (< 1 = faster)
+    player.facilityCapBonus     = 0      -- +N to each facility's unit cap
     player.enemySpeedMult       = 1.0    -- < 1 = slower enemies
 
     player._leveledUp = false
